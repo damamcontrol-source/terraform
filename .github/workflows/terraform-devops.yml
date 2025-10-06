@@ -1,3 +1,15 @@
+name: 'Create Infra with Terraform'
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  RESOURCE_GROUP_NAME: rg-terraform-state
+  CONTAINER_NAME: tfstate
+  BLOB_NAME: terraform.tfstate
+  WORKING_DIRECTORY: 05_Web_Sql_database
 jobs:
   deploy-azure-infra-terraform:
     runs-on: ubuntu-latest
