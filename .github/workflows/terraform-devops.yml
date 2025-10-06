@@ -1,19 +1,10 @@
-name: 'Create Infra with Terraform'
-
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
-
-env:
-  RESOURCE_GROUP_NAME: rg-terraform-state
-  CONTAINER_NAME: tfstate
-  BLOB_NAME: terraform.tfstate
-  WORKING_DIRECTORY: 05_Web_Sql_database
-
 jobs:
   deploy-azure-infra-terraform:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ env.WORKING_DIRECTORY }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -28,7 +19,6 @@ jobs:
           UNIQUE_NAME=storagetf$(echo $RANDOM | tr -dc '0-9' | cut -c1-6)
           UNIQUE_NAME=$(echo $UNIQUE_NAME | tr '[:upper:]' '[:lower:]')
           echo "STORAGE_ACCOUNT_NAME=$UNIQUE_NAME" >> $GITHUB_ENV
-          echo "Generated storage account name: $UNIQUE_NAME"
 
       - name: Create Resource Group + Storage Account + Container
         run: |
@@ -39,7 +29,6 @@ jobs:
              --sku Standard_LRS
           az storage container create --name $CONTAINER_NAME --account-name $STORAGE_ACCOUNT_NAME
 
-          cd $WORKING_DIRECTORY
           cat <<EOT > backend.tf
           terraform {
             backend "azurerm" {
