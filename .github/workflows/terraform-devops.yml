@@ -3,7 +3,6 @@ name: 'Create Infra with Terraform'
 on:
   push:
     branches: [ main ]
-    paths: .github/workflows/terraform-devops.yml
   workflow_dispatch:
 
 env:
@@ -25,9 +24,9 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Generate unique Storage Account Name
-        id: storage
         run: |
-          UNIQUE_NAME=storagetf${RANDOM}${RANDOM}
+          UNIQUE_NAME=storagetf$(echo $RANDOM | tr -dc '0-9' | cut -c1-6)
+          UNIQUE_NAME=$(echo $UNIQUE_NAME | tr '[:upper:]' '[:lower:]')
           echo "STORAGE_ACCOUNT_NAME=$UNIQUE_NAME" >> $GITHUB_ENV
           echo "Generated storage account name: $UNIQUE_NAME"
 
@@ -59,12 +58,22 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
+        env:
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
 
       - name: Terraform Validate
         run: terraform validate -no-color
 
       - name: Terraform Plan
         run: terraform plan -no-color
+        env:
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
